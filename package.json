@@ -1,0 +1,37 @@
+{
+  "name": "devscripter-webpack-plugin",
+  "version": "1.0.0",
+  "description": "A webpack plugin to generate typescript from other models",
+  "main": "dist/main.es.js",
+  "module": "src/index.js",
+  "scripts": {
+    "build": "webpack",
+    "serve": "webpack-dev-server",
+    "prod": "webpack --mode=production && rollup -c"
+  },
+  "repository": "https://github.com/Devcon4/DevScripter",
+  "author": "Devyn Cyphers",
+  "license": "ISC",
+  "bugs": "https://github.com/Devcon4/DevScripter/issues",
+  "homepage": "https://github.com/Devcon4/DevScripter#readme",
+  "devDependencies": {
+    "awesome-typescript-loader": "5.0.0-1",
+    "babel": "^6.23.0",
+    "copy-webpack-plugin": "^4.5.1",
+    "html-webpack-plugin": "^3.0.6",
+    "parallel-webpack": "^2.3.0",
+    "rollup": "^0.57.1",
+    "rollup-plugin-babel": "^3.0.3",
+    "rollup-plugin-commonjs": "^9.1.0",
+    "rollup-plugin-node-resolve": "^3.3.0",
+    "rollup-plugin-typescript2": "^0.13.0",
+    "typescript": "^2.7.2",
+    "uglifyjs-webpack-plugin": "1.2.4",
+    "webpack": "^4.1.1",
+    "webpack-bundle-analyzer": "2.11.1",
+    "webpack-butternut-plugin": "^0.3.4",
+    "webpack-cli": "^2.0.11",
+    "webpack-dev-server": "^3.1.1",
+    "webpack-jarvis": "0.3.0"
+  }
+}
