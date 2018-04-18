@@ -1,1 +1,3 @@
-export default () => console.log('yas!');
+export * from './plugin';
+import loader from './plugin';
+export default loader;

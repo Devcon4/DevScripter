@@ -1,11 +1,11 @@
-const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const CopyWebpackPlugin = require('copy-webpack-plugin');
-const ButternutWebpackPlugin = require('webpack-butternut-plugin');
-const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
-const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
-const Jarvis = require('webpack-jarvis');
-const createVariants = require('parallel-webpack').createVariants;
+import { resolve as _resolve } from "path";
+import HtmlWebpackPlugin from "html-webpack-plugin";
+import CopyWebpackPlugin from "copy-webpack-plugin";
+import ButternutWebpackPlugin from "webpack-butternut-plugin";
+import UglifyJsPlugin from "uglifyjs-webpack-plugin";
+import { BundleAnalyzerPlugin } from "webpack-bundle-analyzer";
+import Jarvis from "webpack-jarvis";
+import { createVariants } from "parallel-webpack";
 
 function capitalizeWord(str) {
   return str.charAt(0).toUpperCase() + str.slice(1);
@@ -17,12 +17,15 @@ function createConfig(options) {
       extensions: ['.ts', '.js'],
       modules: ['node_modules']
     },
+    node: {
+      fs: 'empty'
+    },
     mode: 'development',
     devtool: 'source-map',
     output: {
-        path: path.resolve(__dirname, './dist'),
+        path: _resolve(__dirname, './dist'),
         filename: '[name].' + options.target + '.js',
-        library: 'devCanvas' + options.target === 'umd' ? '' : capitalizeWord(options.target),
+        library: 'devScripter' + options.target === 'umd' ? '' : capitalizeWord(options.target),
         libraryTarget: options.target
     },
     devServer: {
@@ -71,6 +74,6 @@ function createConfig(options) {
   };
 }
 
-module.exports = createVariants({
+export default createVariants({
   target: ['umd']
 }, createConfig);

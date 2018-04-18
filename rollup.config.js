@@ -17,6 +17,7 @@ export default {
         format: 'es',
         name: 'devcanvas'
     },
+    external: ['fs'],
     plugins: [
         resolve({
             jsnext: true,

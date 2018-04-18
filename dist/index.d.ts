@@ -1,2 +1,3 @@
-declare const _default: () => void;
-export default _default;
+export * from './plugin';
+import loader from './plugin';
+export default loader;
