@@ -1,4 +1,4 @@
-class ModelOne {
+class ModelOne: ModelTwo, IModelable {
     public string Name {get;set;};
     int Id {get;set;}
     int OtherInt {get;set;}

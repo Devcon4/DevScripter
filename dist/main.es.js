@@ -13,9 +13,9 @@ function loader(text) {
 function compiler(loader, text) {
     var callback = loader.async();
     var transform = function (text) {
-        return text.split('\n').map(function (v) { return convert.toProperty(v); }).join('\n');
+        return text.split('\r\n').map(function (v) { return convert.pipe(v, convert.toClass, convert.toProperty); }).join('\r\n');
     };
-    writeFile('./OUTPUT.txt', transform(text), function (e) { return callback(null, text); });
+    writeFile('./OUTPUT.json', JSON.stringify([text, transform(text)]), function (e) { return callback(null, text); });
     return text;
 }
 var convert;
@@ -23,36 +23,45 @@ var convert;
     convert.illegalAccessModifier = /(?:internal|protected|short|uint|int|ulong|long|float|double|decimal)/g;
     convert.number = /(?:sbyte|ushort|short|uint|int|ulong|long|float|double|decimal)/g;
     convert.getterSetter = /(?:{\s?get;\s?(set;)?\s?})/g;
+    convert.isClass = /(?:class)/g;
+    function pipe(source) {
+        var args = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            args[_i - 1] = arguments[_i];
+        }
+        var result = source;
+        args.forEach(function (f) {
+            result = f.call(undefined, result);
+        });
+        return result;
+    }
+    convert.pipe = pipe;
     function toClass(source) {
+        var result = '';
+        if (convert.isClass.test(source)) {
+            var inherited = /(?=: )(.*)(?={)/g.exec(source);
+            if (!!inherited) {
+                var interfaces = inherited.filter(function (v) { return v.includes(' I'); });
+                var classes = inherited.filter(function (v) { return !v.includes(' I'); });
+                result += new String(source).slice(0, source.indexOf(': '));
+                if (!!classes) {
+                    result += "extends " + classes.join(', ');
+                }
+                if (!!interfaces) {
+                    result += "implements " + interfaces.join(', ');
+                }
+            }
+            else {
+                result += source;
+            }
+        }
+        return result.length <= 0 ? source : result;
     }
     convert.toClass = toClass;
-    function getClosure(source, matchClosingChar) {
-        if (matchClosingChar === void 0) { matchClosingChar = '}'; }
-        var parts = new String(source).replace(matchClosingChar, function (match, index) {
-            return index;
-        });
-    }
-    convert.getClosure = getClosure;
     function toProperty(source) {
         var result = '';
         var parts = source.split(' ');
-        var name;
-        for (var p in parts) {
-            var part = parts[p];
-            if (convert.illegalAccessModifier.test(part) || convert.number.test(part)) {
-                return;
-            }
-            else if (!name) {
-                name = part;
-                result += part + ": number";
-            }
-            else if (!!name && convert.getterSetter.test(source)) {
-                result += ";\n";
-                break;
-            }
-            result += part + " ";
-        }
-        return result;
+        return result.length <= 0 ? source : result;
     }
     convert.toProperty = toProperty;
 })(convert || (convert = {}));

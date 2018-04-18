@@ -7,7 +7,8 @@
   "scripts": {
     "build": "webpack",
     "serve": "webpack-dev-server",
-    "prod": "webpack --mode=production && rollup -c"
+    "prod": "webpack --mode=production && rollup -c",
+    "demo": "rollup -c && cd ./Demo && webpack && cd .."
   },
   "repository": "https://github.com/Devcon4/DevScripter",
   "author": "Devyn Cyphers",

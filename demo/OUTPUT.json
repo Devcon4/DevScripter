@@ -1,0 +1,4 @@
+[
+    "class ModelOne: ModelTwo, IModelable {\r\n    public string Name {get;set;};\r\n    int Id {get;set;}\r\n    int OtherInt {get;set;}\r\n    float OtherFloat {get;set;}\r\n    char OtherChar {get;set;}\r\n}",
+    "class ModelOneextends implements : ModelTwo, IModelable , : ModelTwo, IModelable \r\n    public string Name {get;set;};\r\n    int Id {get;set;}\r\n    int OtherInt {get;set;}\r\n    float OtherFloat {get;set;}\r\n    char OtherChar {get;set;}\r\n}"
+]

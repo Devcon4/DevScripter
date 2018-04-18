@@ -1,10 +1,0 @@
-class: numberclass ModelOne { 
-: number : number : number : number string: numberstring ;
-
-
-
-
-: number : number : number : number char: numberchar OtherChar ;
-
-}: number} 
-: number 

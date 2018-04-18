@@ -3,7 +3,8 @@ export declare namespace convert {
     const illegalAccessModifier: RegExp;
     const number: RegExp;
     const getterSetter: RegExp;
-    function toClass(source: string): void;
-    function getClosure(source: string, matchClosingChar?: '}' | ')'): void;
+    const isClass: RegExp;
+    function pipe(source: string, ...args: ((source: string) => string)[]): string;
+    function toClass(source: string): string;
     function toProperty(source: string): string;
 }
