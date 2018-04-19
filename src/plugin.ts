@@ -1,7 +1,6 @@
 import { loader } from 'webpack';
 import { writeFile } from 'fs';
 import ms from 'magic-string';
-import { POINT_CONVERSION_COMPRESSED } from 'constants';
 
 // Hack to get LoaderContext (awesome-typescript-loader@5.0.0 does the same thing).
 export default function loader(text: string) {
