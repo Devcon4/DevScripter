@@ -20,75 +20,88 @@ function compiler(loader: loader.LoaderContext, text: string) {
 
     let callback = loader.async();
 
+    let state: convert.IState = {
+        debugArray: []
+    };
+
     let transform = (text: string) => {
 
-        return text.split('\r\n').map(v => convert.pipe(v, 
+
+        return text.split('\r\n').map(v => convert.pipe(v, state, 
             convert.toClass,
             convert.toProperty
         )).join('\r\n');
     };
-    writeFile('./OUTPUT.json', JSON.stringify([text, transform(text)]), e => callback(null, text));
+    writeFile('./OUTPUT.json', JSON.stringify({ original: text, transformed: transform(text), state: state }), e => callback(null, text));
     return text;
 }
 
 export namespace convert {
     
     export const illegalAccessModifier = /(?:internal|protected)/g;
+    export const legalAccessModifier = /(?:public|private|protected|static)/g;
     export const number = /(?:sbyte|ushort|short|uint|int|ulong|long|float|double|decimal)/g;
-    export const getterSetter = /(?:{\s?get;\s?(set;)?\s?})/g;
+    export const isGetterSetter = /(?:{\s?get;\s?(set;)?\s?})/g;
     export const isClass = /(?:class)/g;
 
-    export function pipe(source: string, ...args:((source: string) => string)[]): string {
+    export interface IState {
+        debugArray: any
+    }
+
+    export function pipe(source: string, state: IState, ...args:((source: string, state: IState) => string)[]): string {
         let result = source;
-        args.forEach(f => {
-            result = f.call(undefined, result);
-        });
+        for(let f of args) {
+            result = f.call(undefined, result, state);
+            if (result != source) {
+                break;
+            }
+        };
 
         return result;
     }
 
-    export function toClass(source: string): string {
+    export function toClass(source: string, state: IState): string {
         let result = '';
         if (isClass.test(source)) {
-            let inherited = /(?=: )(.*)(?={)/g.exec(source);
-            if (!!inherited) {
-                let interfaces = inherited.filter(v => v.includes(' I'));
-                let classes = inherited.filter(v => !v.includes(' I'));
-                result += new String(source).slice(0, source.indexOf(': '));
-
-                if (!!classes) {
-                    result += ` extends ${classes.join(', ')}`;
-                }
-                
-                if (!!interfaces) {
-                    result += `implements ${interfaces.join(', ')}`;
-                }
+            let inherited = new String(source.match(/(?=: )(.*)(?={)/g)).split(', ');
+            if (inherited.length > 0) {
+                result += new String(source).slice(0, source.indexOf(': ')) + ' ';
+                result += `implements ${inherited.join(', ').slice(2)/*Remove ' :'*/}`;
             } else {
                 // redundent but succinct
                 result += source;
             }
+            result += ' {';
         }
         return result.length <= 0 ? source : result;
     }
 
-    export function toProperty(source: string) {
+    export function toProperty(source: string, state: IState) {
         let result = '';
-        let parts = source.split(' ');
-        let name: string;
+        
+        let builder: {
+            accessModifier?: string,
+            type?: string,
+            name?: string
+        } = {};
 
-        // for(let p in parts) {
-        //     let part = parts[p];
-        //     if(illegalAccessModifier.test(part) || number.test(part)) {
-        //         return;
-        //     } else if (!name) {
-        //         name = part;
-        //         result += `${part}: number`;
-        //     } else if (!!name && getterSetter.test(source)) {
-        //         result += `;\n`;
-        //         break;
-        //     }
-        //     result += `${part} `;
-        // };
+        if(isGetterSetter.test(source)) {
+            let parts = source.trim().split(' ');
+            state.debugArray = [...state.debugArray, [source], parts];
+
+            for(let p of parts) {
+                if(!builder.accessModifier && legalAccessModifier.test(p)) {
+                    builder.accessModifier = p;
+                } else if (!builder.type && number.test(p)) {
+                    builder.type = p;
+                } else if (!builder.name) {
+                    builder.name = p;
+                }
+            }
+
+            result = `${new ms(source).getIndentString()}${builder.accessModifier} ${builder.name}: number;`;
+        }
+
         return result.length <= 0 ? source : result;
 
     }

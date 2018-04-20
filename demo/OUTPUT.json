@@ -1,4 +1,33 @@
-[
-    "class ModelOne: ModelTwo, IModelable {\r\n    public string Name {get;set;};\r\n    int Id {get;set;}\r\n    int OtherInt {get;set;}\r\n    float OtherFloat {get;set;}\r\n    char OtherChar {get;set;}\r\n}",
-    "class ModelOneextends implements : ModelTwo, IModelable , : ModelTwo, IModelable \r\n    public string Name {get;set;};\r\n    int Id {get;set;}\r\n    int OtherInt {get;set;}\r\n    float OtherFloat {get;set;}\r\n    char OtherChar {get;set;}\r\n}"
-]
+{
+    "original": "class ModelOne: ModelTwo, IModelable {\r\n    public string Name {get;set;};\r\n    int Id {get;set;}\r\n    int OtherInt {get;set;}\r\n    float OtherFloat {get;set;}\r\n    char OtherChar {get;set;}\r\n}",
+    "transformed": "class ModelOne implements ModelTwo, IModelable  {\r\n    public string: number;\r\n    int Id {get;set;}\r\n    undefined OtherInt: number;\r\n    float OtherFloat {get;set;}\r\n    undefined char: number;\r\n}",
+    "state": {
+        "debugArray": [
+            [
+                "    public string Name {get;set;};"
+            ],
+            [
+                "public",
+                "string",
+                "Name",
+                "{get;set;};"
+            ],
+            [
+                "    int OtherInt {get;set;}"
+            ],
+            [
+                "int",
+                "OtherInt",
+                "{get;set;}"
+            ],
+            [
+                "    char OtherChar {get;set;}"
+            ],
+            [
+                "char",
+                "OtherChar",
+                "{get;set;}"
+            ]
+        ]
+    }
+}
