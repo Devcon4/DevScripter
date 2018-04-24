@@ -78,7 +78,7 @@
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-eval("throw new Error(\"Module parse failed: Unexpected token (1:14)\\nYou may need an appropriate loader to handle this file type.\\n| class ModelOne: ModelTwo, IModelable {\\r\\n|     public string Name {get;set;};\\r\\n|     int Id {get;set;}\\r\");\n\n//# sourceURL=webpack:///./src/ModelOne.cs?");
+eval("throw new Error(\"Module parse failed: Unexpected token (1:14)\\nYou may need an appropriate loader to handle this file type.\\n| class ModelOne: ModelTwo, IModelable {\\r\\n|     int Id {get;set;}\\r\\n|     public string Name {get;set;}\\r\");\n\n//# sourceURL=webpack:///./src/ModelOne.cs?");
 
 /***/ })
 

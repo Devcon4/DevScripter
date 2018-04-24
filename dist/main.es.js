@@ -1040,21 +1040,32 @@ function loader(text) {
 function compiler(loader, text) {
     var callback = loader.async();
     var state = {
-        debugArray: []
+        debugArray: [],
+        importMoment: false
     };
     var transform = function (text) {
         return text.split('\r\n').map(function (v) { return convert.pipe(v, state, convert.toClass, convert.toProperty); }).join('\r\n');
     };
-    writeFile('./OUTPUT.json', JSON.stringify({ original: text, transformed: transform(text), state: state }), function (e) { return callback(null, text); });
-    return text;
+    writeFile('./ModelOne.ts', transform(text), function (e) { return callback(null, text); });
 }
 var convert;
 (function (convert) {
-    convert.illegalAccessModifier = /(?:internal|protected)/g;
-    convert.legalAccessModifier = /(?:public|private|protected|static)/g;
-    convert.number = /(?:sbyte|ushort|short|uint|int|ulong|long|float|double|decimal)/g;
-    convert.isGetterSetter = /(?:{\s?get;\s?(set;)?\s?})/g;
-    convert.isClass = /(?:class)/g;
+    convert.regexAny = function () {
+        var reg = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            reg[_i] = arguments[_i];
+        }
+        return new RegExp("" + reg.map(function (r) { return r.source; }).join('|'));
+    };
+    convert.illegalAccessModifier = /(?:internal|protected)/;
+    convert.legalAccessModifier = /(?:public|private|protected|static)/;
+    convert.number = /(?:sbyte|ushort|short|uint|int|ulong|long|float|double|decimal|byte)/;
+    convert.string = /(?:char|string)/;
+    convert.bool = /(?:bool)/;
+    convert.date = /(?:DateTime)/;
+    convert.isType = convert.regexAny(convert.number, convert.string, convert.bool, convert.date);
+    convert.isGetterSetter = /(?:{\s?get;\s?(set;)?\s?})/;
+    convert.isClass = /(?:class)/;
     function pipe(source, state) {
         var args = [];
         for (var _i = 2; _i < arguments.length; _i++) {
@@ -1089,25 +1100,33 @@ var convert;
     convert.toClass = toClass;
     function toProperty(source, state) {
         var result = '';
-        var builder = {};
+        var builder = {
+            accessModifier: 'public',
+            type: undefined,
+            name: undefined
+        };
         if (convert.isGetterSetter.test(source)) {
             var parts = source.trim().split(' ');
-            state.debugArray = state.debugArray.concat([[source], parts]);
             for (var _i = 0, parts_1 = parts; _i < parts_1.length; _i++) {
                 var p = parts_1[_i];
-                if (!builder.accessModifier && convert.legalAccessModifier.test(p)) {
+                if (convert.legalAccessModifier.test(p)) {
                     builder.accessModifier = p;
                 }
-                else if (!builder.type && convert.number.test(p)) {
+                else if (!builder.type && convert.isType.test(p)) {
                     builder.type = p;
                 }
                 else if (!builder.name) {
                     builder.name = p;
                 }
             }
-            result = "" + new MagicString(source).getIndentString() + builder.accessModifier + " " + builder.name + ": number;";
+            var checkObj = (_a = {}, _a[+true] = ': Any', _a[+convert.number.test(builder.type)] = 'number', _a[+convert.string.test(builder.type)] = 'string', _a[+convert.bool.test(builder.type)] = 'boolean', _a[+convert.date.test(builder.type)] = 'moment.Moment', _a);
+            if (convert.date.test(builder.type)) {
+                state.importMoment = true;
+            }
+            result = "" + new MagicString(source).getIndentString() + builder.accessModifier + " " + builder.name + ": " + checkObj[+true] + ";";
         }
         return result.length <= 0 ? source : result;
+        var _a;
     }
     convert.toProperty = toProperty;
 })(convert || (convert = {}));

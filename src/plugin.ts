@@ -21,7 +21,8 @@ function compiler(loader: loader.LoaderContext, text: string) {
     let callback = loader.async();
 
     let state: convert.IState = {
-        debugArray: []
+        debugArray: [],
+        importMoment: false
     };
 
     let transform = (text: string) => {
@@ -32,20 +33,28 @@ function compiler(loader: loader.LoaderContext, text: string) {
             convert.toProperty
         )).join('\r\n');
     };
-    writeFile('./OUTPUT.json', JSON.stringify({ original: text, transformed: transform(text), state: state }), e => callback(null, text));
-    return text;
+    // writeFile('./OUTPUT.json', JSON.stringify({ original: text, transformed: transform(text), state: state }), e => callback(null, text));
+   writeFile('./ModelOne.ts', transform(text), e => callback(null, text));
 }
 
 export namespace convert {
     
-    export const illegalAccessModifier = /(?:internal|protected)/g;
-    export const legalAccessModifier = /(?:public|private|protected|static)/g;
-    export const number = /(?:sbyte|ushort|short|uint|int|ulong|long|float|double|decimal)/g;
-    export const isGetterSetter = /(?:{\s?get;\s?(set;)?\s?})/g;
-    export const isClass = /(?:class)/g;
+    export const regexAny = (...reg: RegExp[]) =>
+        new RegExp(`${reg.map(r => r.source).join('|')}`);
+
+    export const illegalAccessModifier = /(?:internal|protected)/;
+    export const legalAccessModifier = /(?:public|private|protected|static)/;
+    export const number = /(?:sbyte|ushort|short|uint|int|ulong|long|float|double|decimal|byte)/;
+    export const string = /(?:char|string)/;
+    export const bool = /(?:bool)/;
+    export const date = /(?:DateTime)/;
+    export const isType = convert.regexAny(number, string, bool, date);
+    export const isGetterSetter = /(?:{\s?get;\s?(set;)?\s?})/;
+    export const isClass = /(?:class)/;
 
     export interface IState {
-        debugArray: any
+        debugArray: any,
+        importMoment: boolean
     }
 
     export function pipe(source: string, state: IState, ...args:((source: string, state: IState) => string)[]): string {
@@ -79,27 +88,39 @@ export namespace convert {
     export function toProperty(source: string, state: IState) {
         let result = '';
         
-        let builder: {
-            accessModifier?: string,
-            type?: string,
-            name?: string
-        } = {};
+        let builder = {
+            accessModifier: 'public',
+            type: undefined as string,
+            name: undefined as string
+        };
 
-        if(isGetterSetter.test(source)) {
+        if(convert.isGetterSetter.test(source)) {
             let parts = source.trim().split(' ');
-            state.debugArray = [...state.debugArray, [source], parts];
 
             for(let p of parts) {
-                if(!builder.accessModifier && legalAccessModifier.test(p)) {
+                if(legalAccessModifier.test(p)) {
                     builder.accessModifier = p;
-                } else if (!builder.type && number.test(p)) {
+                } else if (!builder.type && isType.test(p)) {
                     builder.type = p;
                 } else if (!builder.name) {
                     builder.name = p;
                 }
             }
 
-            result = `${new ms(source).getIndentString()}${builder.accessModifier} ${builder.name}: number;`;
+            let checkObj = {
+                [+true]: ': Any',
+                [+convert.number.test(builder.type)]: 'number',
+                [+convert.string.test(builder.type)]: 'string',
+                [+convert.bool.test(builder.type)]: 'boolean',
+                [+convert.date.test(builder.type)]: 'moment.Moment',
+            }
+            
+            if (convert.date.test(builder.type)) {
+                state.importMoment = true
+            }
+            
+            result = `${new ms(source).getIndentString()}${builder.accessModifier} ${builder.name}: ${checkObj[+true]};`;
+            // state.debugArray = [...state.debugArray, convert.number.test(builder.type), checkObj, result];
         }
 
         return result.length <= 0 ? source : result;

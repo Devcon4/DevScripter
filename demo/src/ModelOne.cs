@@ -1,7 +1,7 @@
 class ModelOne: ModelTwo, IModelable {
-    public string Name {get;set;};
     int Id {get;set;}
-    int OtherInt {get;set;}
+    public string Name {get;set;}
     float OtherFloat {get;set;}
+    int OtherInt {get;set;}
     char OtherChar {get;set;}
 }
